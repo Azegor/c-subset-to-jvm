@@ -1,0 +1,129 @@
+// CUP specification for a simple language
+import java_cup.runtime.*;
+import java.util.*;
+
+/* Terminals (tokens returned by the scanner). */
+terminal           COMMA, PLUS, MINUS, TIMES, SLASH, LPAREN, RPAREN, LBRACE, RBRACE;
+terminal           ASSIGN, EQUALS, LT, GT, LE, GE, NEQUALS, AND, OR, NOT;
+terminal           IF, ELSE, WHILE, FOR, RETURN, SEMICOLON, COLON, QUESTION; 
+terminal           INT;
+terminal String    IDENTIFIER;
+terminal Integer   NUMBER;
+
+/* Non-terminals */
+nonterminal Program           program;
+nonterminal List<Function>    functionList;
+nonterminal Function          function;
+nonterminal List<String>      paramList, neParamList;
+nonterminal Declaration       declaration;
+nonterminal List<Declaration> declarations;
+nonterminal Statement         statement, exprStatement, opt_statement;
+nonterminal List<Statement>   statementList;
+nonterminal Expr              expr;
+nonterminal List<Expr>        exprList, neExprList;
+nonterminal BoolExpr          boolExpr, opt_boolExpr;
+
+precedence left     OR;
+precedence left     AND;
+precedence right    NOT;
+precedence left     PLUS, MINUS;
+precedence left     TIMES, SLASH;
+
+/* The grammar */
+program ::= functionList:l {: RESULT = new Program(l); :} ;
+
+functionList ::= /* epsilon */ {: RESULT = new ArrayList<Function>(); :}
+              |  functionList:l function:f {: l.add(f); RESULT = l;    :}
+              ;
+
+function ::= INT IDENTIFIER:f LPAREN paramList:p RPAREN 
+             LBRACE declarations:d statementList:l RBRACE
+             {: RESULT = new Function(f, p, d, l); :}
+          ;
+
+paramList ::= /* epsilon */ {: RESULT = new ArrayList<String>(); :}
+           |  neParamList:l {: RESULT = l;                        :}
+           ;
+
+neParamList ::= INT IDENTIFIER:v                     
+                {: RESULT = new ArrayList<String>(); 
+                   RESULT.add(v); 
+                :}
+             |  neParamList:l COMMA INT IDENTIFIER:v {: RESULT = l; RESULT.add(v);  :}
+             ;           
+
+declaration ::= INT IDENTIFIER:v SEMICOLON {: RESULT = new Declaration(v); :}
+             | INT IDENTIFIER:v ASSIGN expr:e SEMICOLON {: RESULT = new Declaration(v, e); :}
+             ;
+
+declarations ::= /* epsilon */                {: RESULT = new ArrayList<Declaration>(); :}
+              |  declarations:l declaration:d {: RESULT = l; RESULT.add(d);              :}
+              ;
+
+statement ::= LBRACE statementList:l RBRACE {: RESULT = new Block(l);     :}
+           |  IF LPAREN boolExpr:b RPAREN statement:s                 
+              {: RESULT = new IfThen(b, s); :}        
+           |  IF LPAREN boolExpr:b RPAREN statement:t ELSE statement:e
+              {: RESULT = new IfThenElse(b, t, e); :}
+           |  WHILE LPAREN boolExpr:b RPAREN statement:s
+              {: RESULT = new While(b, s); :}
+           |  FOR LPAREN opt_statement:init SEMICOLON opt_boolExpr:b SEMICOLON opt_statement:incr RPAREN statement:s
+              {: RESULT = new For(init, b, incr, s); :}
+           |  RETURN expr:e SEMICOLON   {: RESULT = new Return(e);        :}
+           |  exprStatement:e SEMICOLON {: RESULT = e; :}
+           ;
+		   
+exprStatement ::=  expr:e           {: RESULT = new ExprStatement(e); :}
+               |  IDENTIFIER:v ASSIGN expr:e    {: RESULT = new Assign(v, e); :}
+			   ;
+ 
+opt_statement ::= exprStatement:s {: RESULT = s; :}
+              | /* empty */ {: RESULT = null; :}
+              ;
+
+statementList ::= /* epsilon */ {: RESULT = new ArrayList<Statement>(); :}
+               |  statement:s statementList:l 
+                  {: RESULT = new ArrayList<Statement>();
+                     RESULT.add(s); 
+                     RESULT.addAll(l);
+                  :}
+               ;
+
+expr ::= expr:l PLUS  expr:r                 {: RESULT = new Sum(       l, r); :}
+      |  expr:l MINUS expr:r                 {: RESULT = new Difference(l, r); :}
+      |  expr:l TIMES expr:r                 {: RESULT = new Product(   l, r); :}
+      |  expr:l SLASH expr:r                 {: RESULT = new Quotient(  l, r); :}
+      |  LPAREN expr:e RPAREN                {: RESULT = e;                    :}
+      |  NUMBER:n                            {: RESULT = new MyNumber(n);      :}
+      |  IDENTIFIER:v                        {: RESULT = new Variable(v);      :}
+      |  IDENTIFIER:n LPAREN exprList:l RPAREN 
+         {: RESULT = new FunctionCall(n, l); :}
+      |  boolExpr:b QUESTION expr:tex COLON expr:fex
+         {: RESULT = new TrinityOperator(b, tex, fex); :}
+      ;
+
+exprList ::= /* epsilon */ {: RESULT = new ArrayList<Expr>(); :}
+          |  neExprList:l  {: RESULT = l;                      :}
+          ;
+
+neExprList ::= expr:e 
+               {: RESULT = new ArrayList<Expr>();
+                  RESULT.add(e);
+               :}                  
+            |  neExprList:l COMMA expr:e {: RESULT = l; RESULT.add(e); :}
+            ;
+
+boolExpr ::= expr:l EQUALS  expr:r     {: RESULT = new Equation(      l, r); :}
+          |  expr:l NEQUALS expr:r     {: RESULT = new Inequation(    l, r); :}
+          |  expr:l LE      expr:r     {: RESULT = new LessOrEqual(   l, r); :}
+          |  expr:l GE      expr:r     {: RESULT = new GreaterOrEqual(l, r); :}
+          |  expr:l LT      expr:r     {: RESULT = new LessThan(      l, r); :}
+          |  expr:l GT      expr:r     {: RESULT = new GreaterThan(   l, r); :}
+          |  NOT boolExpr:e            {: RESULT = new Negation(      e   ); :}
+          |  boolExpr:l AND boolExpr:r {: RESULT = new Conjunction(   l, r); :}
+          |  boolExpr:l OR  boolExpr:r {: RESULT = new Disjunction(   l, r); :}
+          ;
+
+opt_boolExpr ::= boolExpr:e {: RESULT = e; :}
+              | /* empty */ {: RESULT = null; :}
+              ;

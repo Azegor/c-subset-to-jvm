@@ -1,0 +1,197 @@
+.class public MySum
+.super java/lang/Object
+
+.method public <init>()V
+    aload 0
+    invokenonvirtual java/lang/Object/<init>()V
+    return
+.end method
+
+
+.method public static main([Ljava/lang/String;)V
+.limit locals 1
+.limit stack 2
+ldc 0
+istore 0
+ldc 6
+ldc 6
+imul
+istore 0
+getstatic java/lang/System/out Ljava/io/PrintStream;
+ldc 42
+invokestatic MySum/forTest(I)I
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+getstatic java/lang/System/out Ljava/io/PrintStream;
+ldc 2345
+invokestatic MySum/bla(I)I
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+return
+.end method
+
+.method public static bla(I)I
+.limit locals 3
+.limit stack 2
+ldc 0
+istore 1
+ldc 0
+istore 2
+ldc 7
+istore 2
+ldc 0
+istore 1
+l1:
+iload 1
+ldc 5
+if_icmplt l3
+bipush 0
+goto l4
+l3:
+bipush 1
+l4:
+ifeq l2
+iload 2
+ldc 1
+iadd
+istore 2
+iload 1
+ldc 1
+iadd
+istore 1
+goto l1
+l2:
+iload 2
+ireturn
+.end method
+
+.method public static bla()I
+.limit locals 2
+.limit stack 2
+ldc 2
+istore 0
+ldc 2
+ldc 0
+if_icmpgt l5
+bipush 0
+goto l6
+l5:
+bipush 1
+l6:
+ifeq l7
+ldc 7
+ldc 1
+if_icmplt l9
+bipush 0
+goto l10
+l9:
+bipush 1
+l10:
+ifeq l11
+ldc 5
+goto l12
+l11:
+ldc 4
+l12:
+goto l8
+l7:
+ldc 3
+l8:
+istore 1
+getstatic java/lang/System/out Ljava/io/PrintStream;
+iload 1
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+l13:
+getstatic java/lang/System/out Ljava/io/PrintStream;
+ldc 42
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+iload 0
+ldc 1
+isub
+istore 0
+iload 0
+ldc 0
+if_icmplt l15
+bipush 0
+goto l16
+l15:
+bipush 1
+l16:
+ifeq l17
+iload 0
+ireturn
+l17:
+goto l13
+l14:
+.end method
+
+.method public static forTest(I)I
+.limit locals 3
+.limit stack 2
+ldc 2
+istore 1
+ldc 4
+ldc 3
+imul
+istore 2
+getstatic java/lang/System/out Ljava/io/PrintStream;
+invokestatic MySum/bla()I
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+ldc 3
+istore 2
+l18:
+iload 2
+iload 1
+if_icmplt l20
+bipush 0
+goto l21
+l20:
+bipush 1
+l21:
+ifeq l19
+getstatic java/lang/System/out Ljava/io/PrintStream;
+iload 2
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+iload 2
+ldc 1
+iadd
+istore 2
+goto l18
+l19:
+l22:
+iload 1
+ldc 1
+isub
+istore 1
+getstatic java/lang/System/out Ljava/io/PrintStream;
+iload 1
+invokevirtual java/io/PrintStream/println(I)V
+bipush 42
+pop
+iload 1
+ldc 0
+if_icmpeq l24
+bipush 0
+goto l25
+l24:
+bipush 1
+l25:
+ifeq l26
+ldc 42
+ireturn
+l26:
+goto l22
+l23:
+ldc 32
+ireturn
+.end method
